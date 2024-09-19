@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: frontend-rs
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      env: production
+  template:
+    metadata:
+      labels:
+        env: production
+    spec:
+      containers:
+      - name: engine-container
+        image: nginx:latest
