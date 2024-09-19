@@ -4,17 +4,20 @@ from flask import Flask, jsonify, request
 from kubernetes import client, config
 from datetime import datetime
 
+from kubernetes.client import ApiException
+
 config.load_kube_config()
 
 app = Flask(__name__)
 
+
 @app.route('/listar', methods=['GET'])
 def obter_pods():
     # Cria uma instância da API do Kubernetes
-    v1=client.CoreV1Api()
+    v1 = client.CoreV1Api()
     ret = v1.list_namespaced_pod(namespace="default")
     pod_info_list = []
-    
+
     for pod in ret.items:
         name = pod.metadata.name
         status = pod.status.phase
@@ -24,6 +27,8 @@ def obter_pods():
         })
     return jsonify(pod_info_list)
     #return jsonify(ret.to_dict())
+
+
 """
 @app.route('/scale-up')
 def scale_up():
@@ -49,6 +54,7 @@ def scale_up():
     return obter_pods()
 """
 
+
 @app.route('/scale-up/<string:n>/<int:number_of_replicas>')
 def scale_up(n, number_of_replicas):
     apps_v1 = client.AppsV1Api()
@@ -59,8 +65,9 @@ def scale_up(n, number_of_replicas):
     response = apps_v1.replace_namespaced_replica_set(name=n, namespace=namespace, body=replicaset)
     return obter_pods()
 
-@app.route('/scale-down/<string:n>/<int:number_of_replicas>', methods=['POST'])
-def scale_down(n,number_of_replicas):
+
+@app.route('/scale-down/<string:n>/<int:number_of_replicas>', methods=['POST', 'PUT'])
+def scale_down(n, number_of_replicas):
     apps_v1 = client.AppsV1Api()
     namespace = "default"
     new_replicas = number_of_replicas
@@ -68,5 +75,27 @@ def scale_down(n,number_of_replicas):
     replicaset.spec.replicas -= new_replicas
     response = apps_v1.replace_namespaced_replica_set(name=n, namespace=namespace, body=replicaset)
     return obter_pods()
+
+
+@app.route('/status/<string:n>', methods=['GET'])
+def status(n):
+    apps_v1 = client.AppsV1Api()
+    namespace = "default"
+
+    replicaset = apps_v1.list_namespaced_replica_set(namespace=namespace)
+    replicaset_name = n
+
+    for rs in replicaset.items:
+        if rs.metadata.name == replicaset_name:
+            status = {
+                "replicaset": rs.metadata.name,
+                "desired_replicas": rs.spec.replicas,
+                "available_replicas": rs.status.available_replicas,
+                "ready_replicas": rs.status.ready_replicas,
+                "conditions": rs.status.conditions
+            }
+            return jsonify(status)
+
+
 
 app.run()
