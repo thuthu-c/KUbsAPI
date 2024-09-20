@@ -1,7 +1,13 @@
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
-def criar_replicaset_se_nao_existir(namespace, nome_replicaset, nome_app, imagem, replicas):
+def criar_replicaset():
+    namespace="default"
+    nome_replicaset="frontend-rs"
+    nome_app="meu-app"
+    imagem="nginx:latest"  # Substitua pela imagem desejada
+    replicas=3  # Quantidade de réplicas
+    
     # Carrega a configuração do kubeconfig
     config.load_kube_config()
 
@@ -47,10 +53,4 @@ def criar_replicaset_se_nao_existir(namespace, nome_replicaset, nome_app, imagem
             print(f"Erro ao verificar a existência do ReplicaSet: {e}")
 
 # Exemplo de uso
-criar_replicaset_se_nao_existir(
-    namespace="default",
-    nome_replicaset="frontend-rs",
-    nome_app="meu-app",
-    imagem="nginx:latest",  # Substitua pela imagem desejada
-    replicas=3  # Quantidade de réplicas
-)
+criar_replicaset()
