@@ -96,13 +96,13 @@ def status(n):
             }
             return jsonify(status)
 
-@app.route('/criar', methods=['GET'])
-def criar_replicaset():
+@app.route('/criar/<string:n>/<int:number_of_replicas>', methods=['GET'])
+def criar_replicaset(n, number_of_replicas):
     namespace="default"
-    nome_replicaset="frontend-rs"
+    nome_replicaset=n
     nome_app="meu-app"
     imagem="nginx:latest"  # Substitua pela imagem desejada
-    replicas=3  # Quantidade de réplicas
+    replicas= number_of_replicas # Quantidade de réplicas
     
     # Carrega a configuração do kubeconfig
     config.load_kube_config()
