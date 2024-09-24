@@ -30,7 +30,7 @@ def scale_up(n, number_of_replicas):
     new_replicas = number_of_replicas
     replicaset = apps_v1.read_namespaced_replica_set(name=n, namespace=namespace)
     replicaset.spec.replicas += new_replicas
-    response = apps_v1.replace_namespaced_replica_set(name=n, namespace=namespace, body=replicaset)
+    response = apps_v1.patch_namespaced_replica_set(name=n, namespace=namespace, body=replicaset)
     return get_pods()
 
 
@@ -41,7 +41,7 @@ def scale_down(n, number_of_replicas):
     new_replicas = number_of_replicas
     replicaset = apps_v1.read_namespaced_replica_set(name=n, namespace=namespace)
     replicaset.spec.replicas -= new_replicas
-    response = apps_v1.replace_namespaced_replica_set(name=n, namespace=namespace, body=replicaset)
+    response = apps_v1.patch_namespaced_replica_set(name=n, namespace=namespace, body=replicaset)
     return get_pods()
 
 
