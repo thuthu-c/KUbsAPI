@@ -1,5 +1,8 @@
-from flask import Flask, jsonify
+import subprocess
+
+from flask import Flask, jsonify, request
 from kubernetes import client, config
+import yaml
 
 from kubernetes.client import ApiException
 
@@ -64,7 +67,7 @@ def status(n):
             }
             return jsonify(status)
 
-@app.route('/criar/<string:n>/<int:number_of_replicas>', methods=['GET'])
+@app.route('/criar/<int:replicas>', methods=['GET'])
 def create_replicaset(n, number_of_replicas):
     namespace="default"
     nome_replicaset=n
@@ -113,5 +116,39 @@ def create_replicaset(n, number_of_replicas):
         else:
             print(f"Erro ao verificar a existência do ReplicaSet: {e}")
     return get_pods()
+
+
+@app.route("/write_yaml/<int:replicas>", methods=['GET'])
+def generate_deployment_yaml(replicas):
+    with open("nginx-deployment.yaml", 'r') as stream:
+        deployment = yaml.safe_load(stream)
+
+        deployment['spec']['replicas'] = replicas
+
+    with open("nginx-deployment.yaml", 'w') as outfile:
+        yaml.safe_dump(deployment, outfile)
+
+    return deployment
+
+
+
+@app.route("/comando/<string:file_path>", methods=['POST'])
+def apply_yaml_file(file_path):
+    try:
+        # Executa o comando `kubectl apply -f <file_path>`
+        result = subprocess.run(
+            ["kubectl", "apply", "-f", file_path],
+            check=True,
+            capture_output=True,
+            text=True
+        )
+        return result.stdout
+    except subprocess.CalledProcessError as e:
+        return f"Error: {e.stderr}"
+
+
+
+
+
 
 app.run()
