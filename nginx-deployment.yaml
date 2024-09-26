@@ -17,3 +17,8 @@ spec:
         name: nginx
         ports:
         - containerPort: 80
+        resources:
+          requests:
+            cpu: "100m"  # Configura o request de CPU
+          limits:
+            cpu: "200m"  # Configura o limit de CPU

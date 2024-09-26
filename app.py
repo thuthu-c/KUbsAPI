@@ -148,6 +148,23 @@ def apply_yaml_file(file_path):
 
 
 
+def scale_deployment(namespace, deployment_name, replicas):
+    apps_v1 = client.AppsV1Api()
+    scale = apps_v1.read_namespaced_deployment_scale(name=deployment_name, namespace=namespace)
+    scale.spec.replicas = replicas
+    apps_v1.replace_namespaced_deployment_scale(name=deployment_name, namespace=namespace, body=scale)
+
+
+
+@app.route("/scale-deployment/<int:replicas>", methods=['GET'])
+def scale(replicas):
+    try:
+        scale_deployment("default", "nginx-deployment", replicas)
+        return {"status": "success", "message": f"Deployment scaled to {replicas} replicas"}, 200
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
+
+
 
 
 
